@@ -1,0 +1,48 @@
+SixIsland_AlteringCave_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, SixIsland_AlteringCave_OnTransition
+	.byte 0
+
+SixIsland_AlteringCave_OnTransition::
+	setworldmapflag FLAG_WORLD_MAP_SIX_ISLAND_ALTERING_CAVE
+	setflag FLAG_PLG_HIDE_MEW
+	specialvar VAR_RESULT, IsNationalPokedexEnabled
+	goto_if_eq VAR_RESULT, FALSE, SixIsland_AlteringCave_OnTransition_End
+	goto_if_unset FLAG_SYS_CAN_LINK_WITH_RS, SixIsland_AlteringCave_OnTransition_End
+	goto_if_set FLAG_PLG_MEW_CAUGHT, SixIsland_AlteringCave_OnTransition_End
+	goto_if_set FLAG_PLG_MEW_DEFEATED, SixIsland_AlteringCave_OnTransition_End
+	clearflag FLAG_PLG_HIDE_MEW
+SixIsland_AlteringCave_OnTransition_End::
+	end
+
+SixIsland_AlteringCave_EventScript_Mew::
+	lock
+	faceplayer
+	playmoncry SPECIES_MEW, CRY_MODE_ENCOUNTER
+	waitmoncry
+	seteventmon SPECIES_MEW, 40
+	setflag FLAG_SYS_SPECIAL_WILD_BATTLE
+	special StartLegendaryBattle
+	waitstate
+	clearflag FLAG_SYS_SPECIAL_WILD_BATTLE
+	specialvar VAR_RESULT, GetBattleOutcome
+	goto_if_eq VAR_RESULT, B_OUTCOME_WON, SixIsland_AlteringCave_EventScript_MewDefeated
+	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, SixIsland_AlteringCave_EventScript_MewRan
+	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, SixIsland_AlteringCave_EventScript_MewRan
+	setflag FLAG_PLG_MEW_CAUGHT
+	setflag FLAG_PLG_HIDE_MEW
+	removeobject LOCALID_ALTERING_CAVE_MEW
+	release
+	end
+
+SixIsland_AlteringCave_EventScript_MewDefeated::
+	setflag FLAG_PLG_MEW_DEFEATED
+	setflag FLAG_PLG_HIDE_MEW
+	removeobject LOCALID_ALTERING_CAVE_MEW
+	setvar VAR_0x8004, SPECIES_MEW
+	goto EventScript_MonFlewAway
+	end
+
+SixIsland_AlteringCave_EventScript_MewRan::
+	setvar VAR_0x8004, SPECIES_MEW
+	goto EventScript_MonFlewAway
+	end

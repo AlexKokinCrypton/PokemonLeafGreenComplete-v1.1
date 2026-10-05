@@ -1,0 +1,77 @@
+EventScript_SetDefeatedEliteFourFlagsVars::
+	clearflag FLAG_HIDE_POSTGAME_GOSSIPERS
+	call EventScript_ResetEliteFour
+	special Script_UpdateTrainerFanClubGameClear
+	specialvar VAR_RESULT, IsNationalPokedexEnabled
+	call_if_eq VAR_RESULT, FALSE, EventScript_SetReadyTryGiveNationalDexScene
+	call EventScript_ResetLegendaries
+	return
+
+EventScript_SetReadyTryGiveNationalDexScene::
+	setvar VAR_MAP_SCENE_PALLET_TOWN_OAK, 2
+	return
+
+EventScript_ResetLegendaries::
+	clearflag FLAG_LUGIA_FLEW_AWAY
+	clearflag FLAG_HO_OH_FLEW_AWAY
+	clearflag FLAG_DEOXYS_FLEW_AWAY
+	call_if_unset FLAG_PLG_CAUGHT_ARTICUNO, EventScript_PLG_RespawnArticuno
+	call_if_unset FLAG_PLG_CAUGHT_ZAPDOS, EventScript_PLG_RespawnZapdos
+	call_if_unset FLAG_PLG_CAUGHT_MOLTRES, EventScript_PLG_RespawnMoltres
+	call_if_unset FLAG_PLG_CAUGHT_MEWTWO, EventScript_PLG_RespawnMewtwo
+	call_if_unset FLAG_PLG_CAUGHT_LUGIA, EventScript_PLG_RespawnLugia
+	call_if_unset FLAG_PLG_CAUGHT_HO_OH, EventScript_PLG_RespawnHoOh
+	call_if_unset FLAG_PLG_CAUGHT_DEOXYS, EventScript_PLG_RespawnDeoxys
+	call_if_unset FLAG_PLG_MEW_CAUGHT, EventScript_PLG_RespawnMew
+	call_if_unset FLAG_PLG_CAUGHT_SNORLAX, EventScript_PLG_RespawnSnorlax
+	return
+
+EventScript_PLG_RespawnArticuno::
+	clearflag FLAG_FOUGHT_ARTICUNO
+	return
+EventScript_PLG_RespawnZapdos::
+	clearflag FLAG_FOUGHT_ZAPDOS
+	return
+EventScript_PLG_RespawnMoltres::
+	clearflag FLAG_FOUGHT_MOLTRES
+	return
+EventScript_PLG_RespawnMewtwo::
+	clearflag FLAG_FOUGHT_MEWTWO
+	return
+EventScript_PLG_RespawnLugia::
+	clearflag FLAG_FOUGHT_LUGIA
+	return
+EventScript_PLG_RespawnHoOh::
+	clearflag FLAG_FOUGHT_HO_OH
+	return
+EventScript_PLG_RespawnDeoxys::
+	clearflag FLAG_FOUGHT_DEOXYS
+	return
+EventScript_PLG_RespawnMew::
+	clearflag FLAG_PLG_MEW_DEFEATED
+	return
+EventScript_PLG_RespawnSnorlax::
+	goto_if_unset FLAG_HIDE_ROUTE_12_SNORLAX, EventScript_Return
+	goto_if_unset FLAG_HIDE_ROUTE_16_SNORLAX, EventScript_Return
+	clearflag FLAG_HIDE_ROUTE_12_SNORLAX
+	clearflag FLAG_WOKE_UP_ROUTE_12_SNORLAX
+	return
+
+EventScript_ResetEliteFourEnd::
+	call EventScript_ResetEliteFour
+	end
+
+EventScript_ResetEliteFour::
+	clearflag FLAG_DEFEATED_LORELEI
+	clearflag FLAG_DEFEATED_BRUNO
+	clearflag FLAG_DEFEATED_AGATHA
+	clearflag FLAG_DEFEATED_LANCE
+	clearflag FLAG_DEFEATED_CHAMP
+	cleartrainerflag TRAINER_CHAMPION_FIRST_SQUIRTLE
+	cleartrainerflag TRAINER_CHAMPION_FIRST_BULBASAUR
+	cleartrainerflag TRAINER_CHAMPION_FIRST_CHARMANDER
+	cleartrainerflag TRAINER_CHAMPION_REMATCH_SQUIRTLE
+	cleartrainerflag TRAINER_CHAMPION_REMATCH_BULBASAUR
+	cleartrainerflag TRAINER_CHAMPION_REMATCH_CHARMANDER
+	setvar VAR_MAP_SCENE_POKEMON_LEAGUE, 0
+	return
