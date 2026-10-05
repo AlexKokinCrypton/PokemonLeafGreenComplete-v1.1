@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+
   pull_request:
     branches:
       - main
+
   workflow_dispatch:
 
 jobs:
@@ -22,17 +24,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: agbcc
-          key: agbcc-${{ runner.os }}-${{ hashFiles('Makefile', 'config.mk') }}
+          key: agbcc-${{ runner.os }}-v1
           restore-keys: |
             agbcc-${{ runner.os }}-
 
-      - name: Install ARM toolchain
+      - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            build-essential \
             gcc-arm-none-eabi \
             binutils-arm-none-eabi \
-            build-essential \
             libpng-dev
 
       - name: Clone agbcc
