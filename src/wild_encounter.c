@@ -392,11 +392,11 @@ static bool8 TryGeneratePLGAlteringCaveMon(u8 flags)
 static bool8 TryGenerateWildMon(const struct WildPokemonInfo * info, u8 area, u8 flags)
 {
     u8 slot = 0;
+    u8 level;
     if (area == WILD_AREA_LAND
      && gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAP_SIX_ISLAND_ALTERING_CAVE)
      && gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAP_SIX_ISLAND_ALTERING_CAVE))
         return TryGeneratePLGAlteringCaveMon(flags);
-    u8 level;
     switch (area)
     {
     case WILD_AREA_LAND:
