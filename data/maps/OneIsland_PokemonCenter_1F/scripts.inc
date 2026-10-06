@@ -198,7 +198,7 @@ OneIsland_PokemonCenter_1F_EventScript_BillGoTakeStroll::
 OneIsland_PokemonCenter_1F_EventScript_Celio::
 	lock
 	faceplayer
-	goto_if_eq VAR_MAP_SCENE_ONE_ISLAND_POKEMON_CENTER_1F, 7, OneIsland_PokemonCenter_1F_EventScript_CelioGiveBillFact
+	goto_if_eq VAR_MAP_SCENE_ONE_ISLAND_POKEMON_CENTER_1F, 7, OneIsland_PokemonCenter_1F_EventScript_CelioPostQuest
 	goto_if_eq VAR_MAP_SCENE_ONE_ISLAND_POKEMON_CENTER_1F, 6, OneIsland_PokemonCenter_1F_EventScript_CelioJustGivenSapphire
 	goto_if_set FLAG_RECOVERED_SAPPHIRE, OneIsland_PokemonCenter_1F_EventScript_GiveCelioSapphire
 	goto_if_eq VAR_MAP_SCENE_ONE_ISLAND_POKEMON_CENTER_1F, 5, OneIsland_PokemonCenter_1F_EventScript_ExplainRainbowPass
@@ -213,6 +213,11 @@ OneIsland_PokemonCenter_1F_EventScript_Celio::
 	waitmovement 0
 	release
 	end
+
+OneIsland_PokemonCenter_1F_EventScript_CelioPostQuest::
+	call OneIsland_PokemonCenter_1F_EventScript_PLG_TryGiveTickets
+	goto_if_eq VAR_RESULT, TRUE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketEnd
+	goto OneIsland_PokemonCenter_1F_EventScript_CelioGiveBillFact
 
 OneIsland_PokemonCenter_1F_EventScript_CelioGiveBillFact::
 	msgbox OneIsland_PokemonCenter_1F_Text_CelioHearingRumorsAboutYou
@@ -255,6 +260,7 @@ OneIsland_PokemonCenter_1F_EventScript_PLG_TryMysticTicket::
 	goto_if_set FLAG_PLG_GOT_MYSTIC_TICKET, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
 	msgbox OneIsland_PokemonCenter_1F_Text_PLG_MysticTicket
 	giveitem ITEM_MYSTIC_TICKET
+	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
 	setflag FLAG_ENABLE_SHIP_NAVEL_ROCK
 	setflag FLAG_PLG_GOT_MYSTIC_TICKET
 	setvar VAR_RESULT, TRUE
@@ -268,6 +274,7 @@ OneIsland_PokemonCenter_1F_EventScript_PLG_TryAuroraTicket::
 	goto_if_unset FLAG_PLG_ELITE4_REMATCH_COMPLETE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
 	msgbox OneIsland_PokemonCenter_1F_Text_PLG_AuroraTicket
 	giveitem ITEM_AURORA_TICKET
+	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
 	setflag FLAG_ENABLE_SHIP_BIRTH_ISLAND
 	setflag FLAG_PLG_GOT_AURORA_TICKET
 	setvar VAR_RESULT, TRUE
