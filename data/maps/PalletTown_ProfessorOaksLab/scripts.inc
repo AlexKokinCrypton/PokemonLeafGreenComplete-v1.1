@@ -568,6 +568,7 @@ PalletTown_ProfessorOaksLab_EventScript_ProfOak::
 	lock
 	faceplayer
 	call PalletTown_ProfessorOaksLab_EventScript_TryGiveJirachi
+	goto_if_eq VAR_RESULT, TRUE, PalletTown_ProfessorOaksLab_EventScript_JirachiGiftEnd
 	goto_if_set SHOWED_OAK_COMPLETE_DEX, PalletTown_ProfessorOaksLab_EventScript_OakJustShownCompleteDex
 	goto_if_eq VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 9, PalletTown_ProfessorOaksLab_EventScript_RatePokedex
 	goto_if_eq VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 8, PalletTown_ProfessorOaksLab_EventScript_MonsAroundWorldWait
@@ -582,21 +583,62 @@ PalletTown_ProfessorOaksLab_EventScript_ProfOak::
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_TryGiveJirachi::
+	setvar VAR_RESULT, FALSE
 	goto_if_set FLAG_PLG_JIRACHI_REWARD, PalletTown_ProfessorOaksLab_EventScript_JirachiReturn
 	setvar VAR_0x8004, 0
 	specialvar VAR_RESULT, GetPokedexCount
-	goto_if_lt VAR_0x8006, 151, PalletTown_ProfessorOaksLab_EventScript_JirachiReturn
+	goto_if_lt VAR_0x8006, 151, PalletTown_ProfessorOaksLab_EventScript_JirachiNoReward
 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_JirachiReward
+	setvar VAR_TEMP_1, SPECIES_JIRACHI
+	bufferspeciesname STR_VAR_1, SPECIES_JIRACHI
 	givemon SPECIES_JIRACHI, 5
-	goto_if_eq VAR_RESULT, 2, PalletTown_ProfessorOaksLab_EventScript_JirachiNoRoom
+	goto_if_eq VAR_RESULT, 0, PalletTown_ProfessorOaksLab_EventScript_JirachiReceivedParty
+	goto_if_eq VAR_RESULT, 1, PalletTown_ProfessorOaksLab_EventScript_JirachiReceivedPC
+	goto PalletTown_ProfessorOaksLab_EventScript_JirachiNoRoom
+
+PalletTown_ProfessorOaksLab_EventScript_JirachiReceivedParty::
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak
+	waitmessage
+	waitfanfare
+	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, PalletTown_ProfessorOaksLab_EventScript_JirachiGiftComplete
+	call EventScript_GetGiftMonPartySlot
+	call EventScript_ChangePokemonNickname
+	goto PalletTown_ProfessorOaksLab_EventScript_JirachiGiftComplete
+
+PalletTown_ProfessorOaksLab_EventScript_JirachiReceivedPC::
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak
+	waitmessage
+	waitfanfare
+	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, PalletTown_ProfessorOaksLab_EventScript_JirachiSentToPC
+	call EventScript_NameReceivedBoxMon
+PalletTown_ProfessorOaksLab_EventScript_JirachiSentToPC::
+	call EventScript_TransferredToPC
+
+PalletTown_ProfessorOaksLab_EventScript_JirachiGiftComplete::
 	setflag FLAG_PLG_JIRACHI_REWARD
 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_JirachiReceived
+	setvar VAR_RESULT, TRUE
 PalletTown_ProfessorOaksLab_EventScript_JirachiReturn::
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_JirachiNoReward::
+	setvar VAR_RESULT, FALSE
 	return
 
 PalletTown_ProfessorOaksLab_EventScript_JirachiNoRoom::
 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_JirachiNoRoom
+	setvar VAR_RESULT, TRUE
 	return
+
+PalletTown_ProfessorOaksLab_EventScript_JirachiGiftEnd::
+	release
+	end
 
 PalletTown_ProfessorOaksLab_EventScript_OakJustShownCompleteDex::
 	msgbox PokedexRating_Text_ThankYouMadeDreamReality
@@ -794,6 +836,7 @@ PalletTown_ProfessorOaksLab_EventScript_RatePokedexOrTryGiveBalls::
 	copyvar VAR_0x8008, VAR_0x8005
 	copyvar VAR_0x8009, VAR_0x8006
 	call PalletTown_ProfessorOaksLab_EventScript_TryGiveRivalStarter
+	goto_if_eq VAR_RESULT, TRUE, PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftEnd
 	buffernumberstring STR_VAR_1, VAR_0x8008
 	buffernumberstring STR_VAR_2, VAR_0x8009
 	goto_if_eq VAR_0x8009, 1, PalletTown_ProfessorOaksLab_EventScript_CheckIfPlayerNeedsBalls  @ Player only has starter
@@ -802,23 +845,69 @@ PalletTown_ProfessorOaksLab_EventScript_RatePokedexOrTryGiveBalls::
 
 
 PalletTown_ProfessorOaksLab_EventScript_TryGiveRivalStarter::
+	setvar VAR_RESULT, FALSE
 	goto_if_set FLAG_PLG_OAK_STARTER_GIFT, PalletTown_ProfessorOaksLab_EventScript_RivalStarterReturn
 	goto_if_lt VAR_0x8009, 51, PalletTown_ProfessorOaksLab_EventScript_RivalStarterReturn
 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterGift
 	goto_if_eq VAR_STARTER_MON, 0, PalletTown_ProfessorOaksLab_EventScript_GiveCharmanderGift
 	goto_if_eq VAR_STARTER_MON, 1, PalletTown_ProfessorOaksLab_EventScript_GiveBulbasaurGift
+	setvar VAR_TEMP_1, SPECIES_SQUIRTLE
+	bufferspeciesname STR_VAR_1, SPECIES_SQUIRTLE
 	givemon SPECIES_SQUIRTLE, 5
-	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone
+	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftResult
 PalletTown_ProfessorOaksLab_EventScript_GiveCharmanderGift::
+	setvar VAR_TEMP_1, SPECIES_CHARMANDER
+	bufferspeciesname STR_VAR_1, SPECIES_CHARMANDER
 	givemon SPECIES_CHARMANDER, 5
-	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone
+	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftResult
 PalletTown_ProfessorOaksLab_EventScript_GiveBulbasaurGift::
+	setvar VAR_TEMP_1, SPECIES_BULBASAUR
+	bufferspeciesname STR_VAR_1, SPECIES_BULBASAUR
 	givemon SPECIES_BULBASAUR, 5
+PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftResult::
+	goto_if_eq VAR_RESULT, 0, PalletTown_ProfessorOaksLab_EventScript_RivalStarterReceivedParty
+	goto_if_eq VAR_RESULT, 1, PalletTown_ProfessorOaksLab_EventScript_RivalStarterReceivedPC
+	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterNoRoom
+
+PalletTown_ProfessorOaksLab_EventScript_RivalStarterReceivedParty::
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak
+	waitmessage
+	waitfanfare
+	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone
+	call EventScript_GetGiftMonPartySlot
+	call EventScript_ChangePokemonNickname
+	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone
+
+PalletTown_ProfessorOaksLab_EventScript_RivalStarterReceivedPC::
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak
+	waitmessage
+	waitfanfare
+	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, PalletTown_ProfessorOaksLab_EventScript_RivalStarterSentToPC
+	call EventScript_NameReceivedBoxMon
+PalletTown_ProfessorOaksLab_EventScript_RivalStarterSentToPC::
+	call EventScript_TransferredToPC
+
 PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone::
 	setflag FLAG_PLG_OAK_STARTER_GIFT
 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterReceived
+	setvar VAR_RESULT, TRUE
 PalletTown_ProfessorOaksLab_EventScript_RivalStarterReturn::
 	return
+
+PalletTown_ProfessorOaksLab_EventScript_RivalStarterNoRoom::
+	msgbox PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterNoRoom
+	setvar VAR_RESULT, TRUE
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftEnd::
+	release
+	end
 
 PalletTown_ProfessorOaksLab_EventScript_RatePokedex::
 	call PokedexRating_EventScript_RateInPerson

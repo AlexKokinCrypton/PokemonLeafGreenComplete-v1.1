@@ -363,8 +363,17 @@ PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterGift::
     .string "chose at the start of your journey?\p"
     .string "You've earned a special reward!$"
 
+PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak::
+    .string "{PLAYER} received {STR_VAR_1} from\n"
+    .string "PROF. OAK!$"
+
 PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterReceived::
-    .string "Take good care of this POKéMON!$"
+    .string "OAK: Take good care of this POKéMON!$"
+
+PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterNoRoom::
+    .string "OAK: It looks like there's no room\n"
+    .string "for another POKéMON right now.\p"
+    .string "Come back after making some space.$"
 
 PalletTown_ProfessorOaksLab_Text_PLG_JirachiReward::
     .string "OAK: Incredible! You've caught all\n"

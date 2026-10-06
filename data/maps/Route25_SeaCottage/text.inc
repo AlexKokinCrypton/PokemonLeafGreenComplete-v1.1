@@ -113,5 +113,14 @@ Route25_SeaCottage_Text_PLG_ThirdStarterGift::
     .string "I've got a rare POKéMON here.\n"
     .string "I think it belongs with you.$"
 
+Route25_SeaCottage_Text_PLG_ReceivedMonFromBill::
+    .string "{PLAYER} received {STR_VAR_1} from\n"
+    .string "BILL!$"
+
 Route25_SeaCottage_Text_PLG_ThirdStarterReceived::
     .string "BILL: Take good care of it!$"
+
+Route25_SeaCottage_Text_PLG_ThirdStarterNoRoom::
+    .string "BILL: Looks like there's no room\n"
+    .string "for another POKéMON right now.\p"
+    .string "Come back after making some space.$"

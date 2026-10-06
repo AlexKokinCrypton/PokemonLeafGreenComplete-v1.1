@@ -40,18 +40,58 @@ Route25_SeaCottage_EventScript_TryGiveThirdStarter::
 	msgbox Route25_SeaCottage_Text_PLG_ThirdStarterGift
 	goto_if_eq VAR_STARTER_MON, 0, Route25_SeaCottage_EventScript_GiveSquirtleGift
 	goto_if_eq VAR_STARTER_MON, 1, Route25_SeaCottage_EventScript_GiveCharmanderGift
+	setvar VAR_TEMP_1, SPECIES_BULBASAUR
+	bufferspeciesname STR_VAR_1, SPECIES_BULBASAUR
 	givemon SPECIES_BULBASAUR, 5
-	goto Route25_SeaCottage_EventScript_ThirdStarterGiftDone
+	goto Route25_SeaCottage_EventScript_ThirdStarterGiftResult
 Route25_SeaCottage_EventScript_GiveSquirtleGift::
+	setvar VAR_TEMP_1, SPECIES_SQUIRTLE
+	bufferspeciesname STR_VAR_1, SPECIES_SQUIRTLE
 	givemon SPECIES_SQUIRTLE, 5
-	goto Route25_SeaCottage_EventScript_ThirdStarterGiftDone
+	goto Route25_SeaCottage_EventScript_ThirdStarterGiftResult
 Route25_SeaCottage_EventScript_GiveCharmanderGift::
+	setvar VAR_TEMP_1, SPECIES_CHARMANDER
+	bufferspeciesname STR_VAR_1, SPECIES_CHARMANDER
 	givemon SPECIES_CHARMANDER, 5
+Route25_SeaCottage_EventScript_ThirdStarterGiftResult::
+	goto_if_eq VAR_RESULT, 0, Route25_SeaCottage_EventScript_ThirdStarterReceivedParty
+	goto_if_eq VAR_RESULT, 1, Route25_SeaCottage_EventScript_ThirdStarterReceivedPC
+	goto Route25_SeaCottage_EventScript_ThirdStarterNoRoom
+
+Route25_SeaCottage_EventScript_ThirdStarterReceivedParty::
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message Route25_SeaCottage_Text_PLG_ReceivedMonFromBill
+	waitmessage
+	waitfanfare
+	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route25_SeaCottage_EventScript_ThirdStarterGiftDone
+	call EventScript_GetGiftMonPartySlot
+	call EventScript_ChangePokemonNickname
+	goto Route25_SeaCottage_EventScript_ThirdStarterGiftDone
+
+Route25_SeaCottage_EventScript_ThirdStarterReceivedPC::
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message Route25_SeaCottage_Text_PLG_ReceivedMonFromBill
+	waitmessage
+	waitfanfare
+	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route25_SeaCottage_EventScript_ThirdStarterSentToPC
+	call EventScript_NameReceivedBoxMon
+Route25_SeaCottage_EventScript_ThirdStarterSentToPC::
+	call EventScript_TransferredToPC
+
 Route25_SeaCottage_EventScript_ThirdStarterGiftDone::
 	setflag FLAG_PLG_BILL_STARTER_GIFT
-	setvar VAR_RESULT, TRUE
 	msgbox Route25_SeaCottage_Text_PLG_ThirdStarterReceived
+	setvar VAR_RESULT, TRUE
 Route25_SeaCottage_EventScript_ThirdStarterReturn::
+	return
+
+Route25_SeaCottage_EventScript_ThirdStarterNoRoom::
+	msgbox Route25_SeaCottage_Text_PLG_ThirdStarterNoRoom
+	setvar VAR_RESULT, TRUE
 	return
 
 Route25_SeaCottage_EventScript_BillGiftEnd::
