@@ -292,6 +292,10 @@ static const u8 sItemEffect_LeafStone[6] = {
     [4] = ITEM4_EVO_STONE,
 };
 
+static const u8 sItemEffect_LinkCable[6] = {
+    [4] = ITEM4_EVO_STONE,
+};
+
 static const u8 sItemEffect_CheriBerry[6] = {
     [3] = ITEM3_PARALYSIS,
 };
@@ -390,6 +394,7 @@ const u8 *const gItemEffectTable[] =
     [ITEM_THUNDER_STONE - ITEM_POTION] = sItemEffect_ThunderStone,
     [ITEM_WATER_STONE - ITEM_POTION]   = sItemEffect_WaterStone,
     [ITEM_LEAF_STONE - ITEM_POTION]    = sItemEffect_LeafStone,
+    [ITEM_LINK_CABLE - ITEM_POTION]    = sItemEffect_LinkCable,
     [ITEM_CHERI_BERRY - ITEM_POTION]   = sItemEffect_CheriBerry,
     [ITEM_CHESTO_BERRY - ITEM_POTION]  = sItemEffect_ChestoBerry,
     [ITEM_PECHA_BERRY - ITEM_POTION]   = sItemEffect_PechaBerry,
