@@ -1,0 +1,345 @@
+--- a/data/maps/PalletTown_ProfessorOaksLab/scripts.inc
++++ b/data/maps/PalletTown_ProfessorOaksLab/scripts.inc
+@@ -568,6 +568,7 @@
+ 	lock
+ 	faceplayer
+ 	call PalletTown_ProfessorOaksLab_EventScript_TryGiveJirachi
++	goto_if_eq VAR_RESULT, TRUE, PalletTown_ProfessorOaksLab_EventScript_JirachiGiftEnd
+ 	goto_if_set SHOWED_OAK_COMPLETE_DEX, PalletTown_ProfessorOaksLab_EventScript_OakJustShownCompleteDex
+ 	goto_if_eq VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 9, PalletTown_ProfessorOaksLab_EventScript_RatePokedex
+ 	goto_if_eq VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 8, PalletTown_ProfessorOaksLab_EventScript_MonsAroundWorldWait
+@@ -582,22 +583,63 @@
+ 	end
+ 
+ PalletTown_ProfessorOaksLab_EventScript_TryGiveJirachi::
++	setvar VAR_RESULT, FALSE
+ 	goto_if_set FLAG_PLG_JIRACHI_REWARD, PalletTown_ProfessorOaksLab_EventScript_JirachiReturn
+ 	setvar VAR_0x8004, 0
+ 	specialvar VAR_RESULT, GetPokedexCount
+-	goto_if_lt VAR_0x8006, 151, PalletTown_ProfessorOaksLab_EventScript_JirachiReturn
++	goto_if_lt VAR_0x8006, 151, PalletTown_ProfessorOaksLab_EventScript_JirachiNoReward
+ 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_JirachiReward
++	setvar VAR_TEMP_1, SPECIES_JIRACHI
++	bufferspeciesname STR_VAR_1, SPECIES_JIRACHI
+ 	givemon SPECIES_JIRACHI, 5
+-	goto_if_eq VAR_RESULT, 2, PalletTown_ProfessorOaksLab_EventScript_JirachiNoRoom
++	goto_if_eq VAR_RESULT, 0, PalletTown_ProfessorOaksLab_EventScript_JirachiReceivedParty
++	goto_if_eq VAR_RESULT, 1, PalletTown_ProfessorOaksLab_EventScript_JirachiReceivedPC
++	goto PalletTown_ProfessorOaksLab_EventScript_JirachiNoRoom
++
++PalletTown_ProfessorOaksLab_EventScript_JirachiReceivedParty::
++	textcolor NPC_TEXT_COLOR_NEUTRAL
++	playfanfare MUS_LEVEL_UP
++	message PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak
++	waitmessage
++	waitfanfare
++	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
++	goto_if_eq VAR_RESULT, NO, PalletTown_ProfessorOaksLab_EventScript_JirachiGiftComplete
++	call EventScript_GetGiftMonPartySlot
++	call EventScript_ChangePokemonNickname
++	goto PalletTown_ProfessorOaksLab_EventScript_JirachiGiftComplete
++
++PalletTown_ProfessorOaksLab_EventScript_JirachiReceivedPC::
++	textcolor NPC_TEXT_COLOR_NEUTRAL
++	playfanfare MUS_LEVEL_UP
++	message PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak
++	waitmessage
++	waitfanfare
++	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
++	goto_if_eq VAR_RESULT, NO, PalletTown_ProfessorOaksLab_EventScript_JirachiSentToPC
++	call EventScript_NameReceivedBoxMon
++PalletTown_ProfessorOaksLab_EventScript_JirachiSentToPC::
++	call EventScript_TransferredToPC
++
++PalletTown_ProfessorOaksLab_EventScript_JirachiGiftComplete::
+ 	setflag FLAG_PLG_JIRACHI_REWARD
+ 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_JirachiReceived
++	setvar VAR_RESULT, TRUE
+ PalletTown_ProfessorOaksLab_EventScript_JirachiReturn::
+ 	return
+ 
++PalletTown_ProfessorOaksLab_EventScript_JirachiNoReward::
++	setvar VAR_RESULT, FALSE
++	return
++
+ PalletTown_ProfessorOaksLab_EventScript_JirachiNoRoom::
+ 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_JirachiNoRoom
++	setvar VAR_RESULT, TRUE
+ 	return
+ 
++PalletTown_ProfessorOaksLab_EventScript_JirachiGiftEnd::
++	release
++	end
++
+ PalletTown_ProfessorOaksLab_EventScript_OakJustShownCompleteDex::
+ 	msgbox PokedexRating_Text_ThankYouMadeDreamReality
+ 	release
+@@ -794,6 +836,7 @@
+ 	copyvar VAR_0x8008, VAR_0x8005
+ 	copyvar VAR_0x8009, VAR_0x8006
+ 	call PalletTown_ProfessorOaksLab_EventScript_TryGiveRivalStarter
++	goto_if_eq VAR_RESULT, TRUE, PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftEnd
+ 	buffernumberstring STR_VAR_1, VAR_0x8008
+ 	buffernumberstring STR_VAR_2, VAR_0x8009
+ 	goto_if_eq VAR_0x8009, 1, PalletTown_ProfessorOaksLab_EventScript_CheckIfPlayerNeedsBalls  @ Player only has starter
+@@ -802,24 +845,70 @@
+ 
+ 
+ PalletTown_ProfessorOaksLab_EventScript_TryGiveRivalStarter::
++	setvar VAR_RESULT, FALSE
+ 	goto_if_set FLAG_PLG_OAK_STARTER_GIFT, PalletTown_ProfessorOaksLab_EventScript_RivalStarterReturn
+ 	goto_if_lt VAR_0x8009, 51, PalletTown_ProfessorOaksLab_EventScript_RivalStarterReturn
+ 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterGift
+ 	goto_if_eq VAR_STARTER_MON, 0, PalletTown_ProfessorOaksLab_EventScript_GiveCharmanderGift
+ 	goto_if_eq VAR_STARTER_MON, 1, PalletTown_ProfessorOaksLab_EventScript_GiveBulbasaurGift
++	setvar VAR_TEMP_1, SPECIES_SQUIRTLE
++	bufferspeciesname STR_VAR_1, SPECIES_SQUIRTLE
+ 	givemon SPECIES_SQUIRTLE, 5
+-	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone
++	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftResult
+ PalletTown_ProfessorOaksLab_EventScript_GiveCharmanderGift::
++	setvar VAR_TEMP_1, SPECIES_CHARMANDER
++	bufferspeciesname STR_VAR_1, SPECIES_CHARMANDER
+ 	givemon SPECIES_CHARMANDER, 5
+-	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone
++	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftResult
+ PalletTown_ProfessorOaksLab_EventScript_GiveBulbasaurGift::
++	setvar VAR_TEMP_1, SPECIES_BULBASAUR
++	bufferspeciesname STR_VAR_1, SPECIES_BULBASAUR
+ 	givemon SPECIES_BULBASAUR, 5
++PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftResult::
++	goto_if_eq VAR_RESULT, 0, PalletTown_ProfessorOaksLab_EventScript_RivalStarterReceivedParty
++	goto_if_eq VAR_RESULT, 1, PalletTown_ProfessorOaksLab_EventScript_RivalStarterReceivedPC
++	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterNoRoom
++
++PalletTown_ProfessorOaksLab_EventScript_RivalStarterReceivedParty::
++	textcolor NPC_TEXT_COLOR_NEUTRAL
++	playfanfare MUS_LEVEL_UP
++	message PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak
++	waitmessage
++	waitfanfare
++	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
++	goto_if_eq VAR_RESULT, NO, PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone
++	call EventScript_GetGiftMonPartySlot
++	call EventScript_ChangePokemonNickname
++	goto PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone
++
++PalletTown_ProfessorOaksLab_EventScript_RivalStarterReceivedPC::
++	textcolor NPC_TEXT_COLOR_NEUTRAL
++	playfanfare MUS_LEVEL_UP
++	message PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak
++	waitmessage
++	waitfanfare
++	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
++	goto_if_eq VAR_RESULT, NO, PalletTown_ProfessorOaksLab_EventScript_RivalStarterSentToPC
++	call EventScript_NameReceivedBoxMon
++PalletTown_ProfessorOaksLab_EventScript_RivalStarterSentToPC::
++	call EventScript_TransferredToPC
++
+ PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftDone::
+ 	setflag FLAG_PLG_OAK_STARTER_GIFT
+ 	msgbox PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterReceived
++	setvar VAR_RESULT, TRUE
+ PalletTown_ProfessorOaksLab_EventScript_RivalStarterReturn::
+ 	return
+ 
++PalletTown_ProfessorOaksLab_EventScript_RivalStarterNoRoom::
++	msgbox PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterNoRoom
++	setvar VAR_RESULT, TRUE
++	return
++
++PalletTown_ProfessorOaksLab_EventScript_RivalStarterGiftEnd::
++	release
++	end
++
+ PalletTown_ProfessorOaksLab_EventScript_RatePokedex::
+ 	call PokedexRating_EventScript_RateInPerson
+ 	goto_if_set FLAG_OAK_SAW_DEX_COMPLETION, PalletTown_ProfessorOaksLab_EventScript_DexCompleted
+--- a/data/maps/PalletTown_ProfessorOaksLab/text.inc
++++ b/data/maps/PalletTown_ProfessorOaksLab/text.inc
+@@ -363,8 +363,17 @@
+     .string "chose at the start of your journey?\p"
+     .string "You've earned a special reward!$"
+ 
++PalletTown_ProfessorOaksLab_Text_PLG_ReceivedMonFromOak::
++    .string "{PLAYER} received {STR_VAR_1} from\n"
++    .string "PROF. OAK!$"
++
+ PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterReceived::
+-    .string "Take good care of this POKéMON!$"
++    .string "OAK: Take good care of this POKéMON!$"
++
++PalletTown_ProfessorOaksLab_Text_PLG_RivalStarterNoRoom::
++    .string "OAK: It looks like there's no room\n"
++    .string "for another POKéMON right now.\p"
++    .string "Come back after making some space.$"
+ 
+ PalletTown_ProfessorOaksLab_Text_PLG_JirachiReward::
+     .string "OAK: Incredible! You've caught all\n"
+--- a/data/maps/Route25_SeaCottage/scripts.inc
++++ b/data/maps/Route25_SeaCottage/scripts.inc
+@@ -40,20 +40,60 @@
+ 	msgbox Route25_SeaCottage_Text_PLG_ThirdStarterGift
+ 	goto_if_eq VAR_STARTER_MON, 0, Route25_SeaCottage_EventScript_GiveSquirtleGift
+ 	goto_if_eq VAR_STARTER_MON, 1, Route25_SeaCottage_EventScript_GiveCharmanderGift
++	setvar VAR_TEMP_1, SPECIES_BULBASAUR
++	bufferspeciesname STR_VAR_1, SPECIES_BULBASAUR
+ 	givemon SPECIES_BULBASAUR, 5
+-	goto Route25_SeaCottage_EventScript_ThirdStarterGiftDone
++	goto Route25_SeaCottage_EventScript_ThirdStarterGiftResult
+ Route25_SeaCottage_EventScript_GiveSquirtleGift::
++	setvar VAR_TEMP_1, SPECIES_SQUIRTLE
++	bufferspeciesname STR_VAR_1, SPECIES_SQUIRTLE
+ 	givemon SPECIES_SQUIRTLE, 5
+-	goto Route25_SeaCottage_EventScript_ThirdStarterGiftDone
++	goto Route25_SeaCottage_EventScript_ThirdStarterGiftResult
+ Route25_SeaCottage_EventScript_GiveCharmanderGift::
++	setvar VAR_TEMP_1, SPECIES_CHARMANDER
++	bufferspeciesname STR_VAR_1, SPECIES_CHARMANDER
+ 	givemon SPECIES_CHARMANDER, 5
++Route25_SeaCottage_EventScript_ThirdStarterGiftResult::
++	goto_if_eq VAR_RESULT, 0, Route25_SeaCottage_EventScript_ThirdStarterReceivedParty
++	goto_if_eq VAR_RESULT, 1, Route25_SeaCottage_EventScript_ThirdStarterReceivedPC
++	goto Route25_SeaCottage_EventScript_ThirdStarterNoRoom
++
++Route25_SeaCottage_EventScript_ThirdStarterReceivedParty::
++	textcolor NPC_TEXT_COLOR_NEUTRAL
++	playfanfare MUS_LEVEL_UP
++	message Route25_SeaCottage_Text_PLG_ReceivedMonFromBill
++	waitmessage
++	waitfanfare
++	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
++	goto_if_eq VAR_RESULT, NO, Route25_SeaCottage_EventScript_ThirdStarterGiftDone
++	call EventScript_GetGiftMonPartySlot
++	call EventScript_ChangePokemonNickname
++	goto Route25_SeaCottage_EventScript_ThirdStarterGiftDone
++
++Route25_SeaCottage_EventScript_ThirdStarterReceivedPC::
++	textcolor NPC_TEXT_COLOR_NEUTRAL
++	playfanfare MUS_LEVEL_UP
++	message Route25_SeaCottage_Text_PLG_ReceivedMonFromBill
++	waitmessage
++	waitfanfare
++	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
++	goto_if_eq VAR_RESULT, NO, Route25_SeaCottage_EventScript_ThirdStarterSentToPC
++	call EventScript_NameReceivedBoxMon
++Route25_SeaCottage_EventScript_ThirdStarterSentToPC::
++	call EventScript_TransferredToPC
++
+ Route25_SeaCottage_EventScript_ThirdStarterGiftDone::
+ 	setflag FLAG_PLG_BILL_STARTER_GIFT
+-	setvar VAR_RESULT, TRUE
+ 	msgbox Route25_SeaCottage_Text_PLG_ThirdStarterReceived
++	setvar VAR_RESULT, TRUE
+ Route25_SeaCottage_EventScript_ThirdStarterReturn::
+ 	return
+ 
++Route25_SeaCottage_EventScript_ThirdStarterNoRoom::
++	msgbox Route25_SeaCottage_Text_PLG_ThirdStarterNoRoom
++	setvar VAR_RESULT, TRUE
++	return
++
+ Route25_SeaCottage_EventScript_BillGiftEnd::
+ 	release
+ 	end
+--- a/data/maps/Route25_SeaCottage/text.inc
++++ b/data/maps/Route25_SeaCottage/text.inc
+@@ -113,5 +113,14 @@
+     .string "I've got a rare POKéMON here.\n"
+     .string "I think it belongs with you.$"
+ 
++Route25_SeaCottage_Text_PLG_ReceivedMonFromBill::
++    .string "{PLAYER} received {STR_VAR_1} from\n"
++    .string "BILL!$"
++
+ Route25_SeaCottage_Text_PLG_ThirdStarterReceived::
+     .string "BILL: Take good care of it!$"
++
++Route25_SeaCottage_Text_PLG_ThirdStarterNoRoom::
++    .string "BILL: Looks like there's no room\n"
++    .string "for another POKéMON right now.\p"
++    .string "Come back after making some space.$"
+--- a/data/maps/CinnabarIsland_PokemonLab_ExperimentRoom/scripts.inc
++++ b/data/maps/CinnabarIsland_PokemonLab_ExperimentRoom/scripts.inc
+@@ -11,18 +11,26 @@
+ 	goto_if_unset FLAG_SYS_NATIONAL_DEX, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilReturn
+ 	goto_if_set FLAG_PLG_SECOND_FOSSIL_GIFT, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilReturn
+ 	goto_if_unset FLAG_GOT_FOSSIL_FROM_MT_MOON, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilReturn
++	goto_if_set FLAG_GOT_HELIX_FOSSIL, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckSecondDomeSpace
++	checkitemspace ITEM_HELIX_FOSSIL
++	goto_if_eq VAR_RESULT, FALSE, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilNoRoom
+ 	msgbox CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossil
+-	goto_if_set FLAG_GOT_HELIX_FOSSIL, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_GiveSecondDome
+-	giveitem ITEM_HELIX_FOSSIL
++	giveitem_msg CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossilReceived, ITEM_HELIX_FOSSIL, 1, MUS_OBTAIN_KEY_ITEM
+ 	setflag FLAG_GOT_HELIX_FOSSIL
+ 	goto CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilDone
+-CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_GiveSecondDome::
+-	giveitem ITEM_DOME_FOSSIL
++CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckSecondDomeSpace::
++	checkitemspace ITEM_DOME_FOSSIL
++	goto_if_eq VAR_RESULT, FALSE, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilNoRoom
++	msgbox CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossil
++	giveitem_msg CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossilReceived, ITEM_DOME_FOSSIL, 1, MUS_OBTAIN_KEY_ITEM
+ 	setflag FLAG_GOT_DOME_FOSSIL
+ CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilDone::
+ 	setflag FLAG_PLG_SECOND_FOSSIL_GIFT
+ 	setvar VAR_RESULT, TRUE
+-	msgbox CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossilReceived
++	return
++CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilNoRoom::
++	msgbox Text_TooBadBagFull
++	setvar VAR_RESULT, TRUE
+ CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilReturn::
+ 	return
+ CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilEnd::
+--- a/data/maps/OneIsland_PokemonCenter_1F/scripts.inc
++++ b/data/maps/OneIsland_PokemonCenter_1F/scripts.inc
+@@ -253,8 +253,10 @@
+ 
+ OneIsland_PokemonCenter_1F_EventScript_PLG_TryMysticTicket::
+ 	goto_if_set FLAG_PLG_GOT_MYSTIC_TICKET, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
++	checkitemspace ITEM_MYSTIC_TICKET
++	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketNoRoom
+ 	msgbox OneIsland_PokemonCenter_1F_Text_PLG_MysticTicket
+-	giveitem ITEM_MYSTIC_TICKET
++	giveitem_msg OneIsland_PokemonCenter_1F_Text_PLG_ReceivedMysticTicket, ITEM_MYSTIC_TICKET, 1, MUS_OBTAIN_KEY_ITEM
+ 	setflag FLAG_ENABLE_SHIP_NAVEL_ROCK
+ 	setflag FLAG_PLG_GOT_MYSTIC_TICKET
+ 	setvar VAR_RESULT, TRUE
+@@ -266,13 +268,20 @@
+ 	goto_if_unset FLAG_PLG_CAUGHT_LUGIA, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
+ 	goto_if_unset FLAG_PLG_CAUGHT_HO_OH, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
+ 	goto_if_unset FLAG_PLG_ELITE4_REMATCH_COMPLETE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
++	checkitemspace ITEM_AURORA_TICKET
++	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketNoRoom
+ 	msgbox OneIsland_PokemonCenter_1F_Text_PLG_AuroraTicket
+-	giveitem ITEM_AURORA_TICKET
++	giveitem_msg OneIsland_PokemonCenter_1F_Text_PLG_ReceivedAuroraTicket, ITEM_AURORA_TICKET, 1, MUS_OBTAIN_KEY_ITEM
+ 	setflag FLAG_ENABLE_SHIP_BIRTH_ISLAND
+ 	setflag FLAG_PLG_GOT_AURORA_TICKET
+ 	setvar VAR_RESULT, TRUE
+ 	return
+ 
++OneIsland_PokemonCenter_1F_EventScript_PLG_TicketNoRoom::
++	msgbox Text_TooBadBagFull
++	setvar VAR_RESULT, TRUE
++	return
++
+ OneIsland_PokemonCenter_1F_EventScript_PLG_TicketEnd::
+ 	release
+ 	end
+--- a/data/maps/OneIsland_PokemonCenter_1F/text.inc
++++ b/data/maps/OneIsland_PokemonCenter_1F/text.inc
+@@ -367,3 +367,11 @@
+     .string "through the Network Machine.\p"
+     .string "This AURORA TICKET should get you\n"
+     .string "to BIRTH ISLAND.$"
++
++OneIsland_PokemonCenter_1F_Text_PLG_ReceivedMysticTicket::
++    .string "{PLAYER} received the MYSTIC TICKET\n"
++    .string "from CELIO!$"
++
++OneIsland_PokemonCenter_1F_Text_PLG_ReceivedAuroraTicket::
++    .string "{PLAYER} received the AURORA TICKET\n"
++    .string "from CELIO!$"
