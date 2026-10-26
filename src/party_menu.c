@@ -5309,19 +5309,40 @@ void ItemUseCB_EvolutionStone(u8 taskId, TaskFunc func)
 
 static void CB2_UseEvolutionStone(void)
 {
+    // Don't leave the faded item-use screen without an active evolution task.
+    // Also avoid spending the item when the target is no longer eligible.
+    if (!MonCanEvolve())
+    {
+        SetMainCallback2(gPartyMenu.exitCallback);
+        return;
+    }
+
     gCB2_AfterEvolution = gPartyMenu.exitCallback;
-    ExecuteTableBasedItemEffect_(gPartyMenu.slotId, gSpecialVar_ItemId, 0);
+    if (ExecuteTableBasedItemEffect_(gPartyMenu.slotId, gSpecialVar_ItemId, 0))
+    {
+        SetMainCallback2(gPartyMenu.exitCallback);
+        return;
+    }
+
     ItemUse_SetQuestLogEvent(QL_EVENT_USED_ITEM, &gPlayerParty[gPartyMenu.slotId], gSpecialVar_ItemId, 0xFFFF);
     RemoveBagItem(gSpecialVar_ItemId, 1);
 }
 
 static bool8 MonCanEvolve(void)
 {
-    if (!IsNationalPokedexEnabled()
-     && GetEvolutionTargetSpecies(&gPlayerParty[gPartyMenu.slotId], EVO_MODE_ITEM_USE, gSpecialVar_ItemId) > KANTO_DEX_COUNT)
+    u16 targetSpecies;
+
+    // Reject invalid use before fading to the evolution scene.
+    // In particular, LINK CABLE with a missing/wrong held item must be a no-op.
+    if (GetMonData(&gPlayerParty[gPartyMenu.slotId], MON_DATA_IS_EGG))
         return FALSE;
-    else
-        return TRUE;
+    targetSpecies = GetEvolutionTargetSpecies(&gPlayerParty[gPartyMenu.slotId], EVO_MODE_ITEM_USE, gSpecialVar_ItemId);
+
+    if (targetSpecies == SPECIES_NONE)
+        return FALSE;
+    if (!IsNationalPokedexEnabled() && targetSpecies > KANTO_SPECIES_END)
+        return FALSE;
+    return TRUE;
 }
 
 u8 GetItemEffectType(u16 item)

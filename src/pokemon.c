@@ -4453,6 +4453,30 @@ bool8 ExecuteTableBasedItemEffect(struct Pokemon *mon, u16 item, u8 partyIndex, 
     }                                                                                                   \
 }
 
+// The evolution target is queried by menu previews and no-effect checks before
+// the item is actually used. Consume a trade-evolution held item ONLY when the
+// Link Cable has successfully started that evolution.
+static void ConsumeLinkCableTradeItem(struct Pokemon *mon, u16 targetSpecies)
+{
+    u16 species = GetMonData(mon, MON_DATA_SPECIES, NULL);
+    u16 heldItem = GetMonData(mon, MON_DATA_HELD_ITEM, NULL);
+    int i;
+
+    for (i = 0; i < EVOS_PER_MON; i++)
+    {
+        if (heldItem != ITEM_NONE
+         && targetSpecies != SPECIES_NONE
+         && gEvolutionTable[species][i].method == EVO_TRADE_ITEM
+         && gEvolutionTable[species][i].param == heldItem
+         && gEvolutionTable[species][i].targetSpecies == targetSpecies)
+        {
+            heldItem = ITEM_NONE;
+            SetMonData(mon, MON_DATA_HELD_ITEM, &heldItem);
+            break;
+        }
+    }
+}
+
 bool8 PokemonUseItemEffects(struct Pokemon *mon, u16 item, u8 partyIndex, u8 moveIndex, bool8 usedByAI)
 {
     u32 data;
@@ -4861,6 +4885,8 @@ bool8 PokemonUseItemEffects(struct Pokemon *mon, u16 item, u8 partyIndex, u8 mov
 
                             if (targetSpecies != SPECIES_NONE)
                             {
+                                if (item == ITEM_LINK_CABLE)
+                                    ConsumeLinkCableTradeItem(mon, targetSpecies);
                                 BeginEvolutionScene(mon, targetSpecies, FALSE, partyIndex);
                                 return FALSE;
                             }
@@ -5608,30 +5634,24 @@ u16 GetEvolutionTargetSpecies(struct Pokemon *mon, u8 type, u16 evolutionItem)
                 break;
             }
 
-            // PLG Complete: LINK CABLE acts as an alternative to trading.
-            // Trade-item evolutions still require (and consume) the held item.
+            // LINK CABLE is an alternative to trading, not a substitute for
+            // trade-held items. The lookup must be side-effect-free: party menu
+            // previews and no-effect checks call it before the item is used.
+            // This handles every EVO_TRADE_ITEM entry (including both Clamperl
+            // outcomes) without hardcoding individual species or items.
             if (evolutionItem == ITEM_LINK_CABLE)
             {
-                if (gEvolutionTable[species][i].method == EVO_TRADE)
+                u16 method = gEvolutionTable[species][i].method;
+                u16 candidate = gEvolutionTable[species][i].targetSpecies;
+
+                if ((method == EVO_TRADE
+                  || (method == EVO_TRADE_ITEM
+                   && heldItem != ITEM_NONE
+                   && gEvolutionTable[species][i].param == heldItem))
+                 && candidate != SPECIES_NONE
+                 && (IsNationalPokedexEnabled() || candidate <= KANTO_SPECIES_END))
                 {
-                    targetSpecies = gEvolutionTable[species][i].targetSpecies;
-                    if (!IsNationalPokedexEnabled() && targetSpecies > KANTO_SPECIES_END)
-                        targetSpecies = SPECIES_NONE;
-                    break;
-                }
-                else if (gEvolutionTable[species][i].method == EVO_TRADE_ITEM
-                      && gEvolutionTable[species][i].param == heldItem)
-                {
-                    targetSpecies = gEvolutionTable[species][i].targetSpecies;
-                    if (!IsNationalPokedexEnabled() && targetSpecies > KANTO_SPECIES_END)
-                    {
-                        targetSpecies = SPECIES_NONE;
-                    }
-                    else if (type == EVO_MODE_ITEM_USE)
-                    {
-                        heldItem = ITEM_NONE;
-                        SetMonData(mon, MON_DATA_HELD_ITEM, &heldItem);
-                    }
+                    targetSpecies = candidate;
                     break;
                 }
             }
