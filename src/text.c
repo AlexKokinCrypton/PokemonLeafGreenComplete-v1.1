@@ -4,6 +4,7 @@
 #include "quest_log.h"
 #include "graphics.h"
 #include "dynamic_placeholder_text_util.h"
+#include "localization.h"
 #include "constants/songs.h"
 
 #define TAG_CURSOR 0x8000
@@ -184,6 +185,39 @@ static const u8 sFontNormalCopy1LatinGlyphWidths[] =
 static const u16 sFontTallJapaneseGlyphs[] = INCBIN_U16("graphics/fonts/japanese_tall.fwjpnfont");
 
 static const u16 sFontNormalLatinGlyphs[] = INCBIN_U16("graphics/fonts/latin_normal.fwlatfont");
+
+// Cyrillic glyphs live in the otherwise unused 0x180..0x1C1 extra-symbol
+// range. Latin and Japanese font images are not replaced.
+#define RUSSIAN_GLYPH_FIRST 0x180
+#define RUSSIAN_GLYPH_COUNT 66
+#define IS_RUSSIAN_GLYPH(id) ((id) >= RUSSIAN_GLYPH_FIRST && (id) < RUSSIAN_GLYPH_FIRST + RUSSIAN_GLYPH_COUNT)
+static const u16 sFontRussianNormalGlyphs[] = INCBIN_U16("graphics/fonts/russian_normal.fwlatfont");
+static const u16 sFontRussianMaleGlyphs[] = INCBIN_U16("graphics/fonts/russian_male.fwlatfont");
+static const u16 sFontRussianFemaleGlyphs[] = INCBIN_U16("graphics/fonts/russian_female.fwlatfont");
+static const u16 sFontRussianSmallGlyphs[] = INCBIN_U16("graphics/fonts/russian_small.hwlatfont");
+// Generated from the actual donor-glyph pixel extents; not arbitrary padding.
+#include "russian_glyph_widths.generated.inc"
+
+static void DecompressRussianGlyphNormal(u16 glyphId, const u16 *fontGlyphs)
+{
+    const u16 *glyphs = fontGlyphs + 0x20 * (glyphId - RUSSIAN_GLYPH_FIRST);
+    DecompressGlyphTile(glyphs, (u16 *)gGlyphInfo.pixels);
+    DecompressGlyphTile(glyphs + 0x8, (u16 *)(gGlyphInfo.pixels + 0x20));
+    DecompressGlyphTile(glyphs + 0x10, (u16 *)(gGlyphInfo.pixels + 0x40));
+    DecompressGlyphTile(glyphs + 0x18, (u16 *)(gGlyphInfo.pixels + 0x60));
+    gGlyphInfo.width = sRussianNormalGlyphWidths[glyphId - RUSSIAN_GLYPH_FIRST];
+    gGlyphInfo.height = 14;
+}
+
+static void DecompressRussianGlyphSmall(u16 glyphId)
+{
+    const u16 *glyphs = sFontRussianSmallGlyphs + 0x10 * (glyphId - RUSSIAN_GLYPH_FIRST);
+    DecompressGlyphTile(glyphs, (u16 *)gGlyphInfo.pixels);
+    DecompressGlyphTile(glyphs + 0x8, (u16 *)(gGlyphInfo.pixels + 0x40));
+    gGlyphInfo.width = sRussianSmallGlyphWidths[glyphId - RUSSIAN_GLYPH_FIRST];
+    gGlyphInfo.height = 13;
+}
+
 static const u8 sFontNormalLatinGlyphWidths[] =
 {
      6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
@@ -1028,6 +1062,7 @@ s32 GetStringWidth(u8 fontId, const u8 *str, s16 letterSpacing)
     int glyphWidth;
     u32 width;
 
+    str = GetLocalizedText(str);
     isJapanese = FALSE;
     minGlyphWidth = 0;
 
@@ -1367,6 +1402,12 @@ void DecompressGlyph_Small(u16 glyphId, bool32 isJapanese)
 {
     const u16 *glyphs;
 
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+    {
+        DecompressRussianGlyphSmall(glyphId);
+        return;
+    }
+
     if (isJapanese == TRUE)
     {
         glyphs = sFontSmallJapaneseGlyphs + (0x100 * (glyphId >> 0x4)) + (0x8 * (glyphId & 0xF));
@@ -1387,6 +1428,8 @@ void DecompressGlyph_Small(u16 glyphId, bool32 isJapanese)
 
 static s32 GetGlyphWidth_Small(u16 glyphId, bool32 isJapanese)
 {
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+        return sRussianSmallGlyphWidths[glyphId - RUSSIAN_GLYPH_FIRST];
     if (isJapanese == TRUE)
         return 8;
     else
@@ -1396,6 +1439,12 @@ static s32 GetGlyphWidth_Small(u16 glyphId, bool32 isJapanese)
 static void DecompressGlyph_NormalCopy1(u16 glyphId, bool32 isJapanese)
 {
     const u16 *glyphs;
+
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+    {
+        DecompressRussianGlyphNormal(glyphId, sFontRussianNormalGlyphs);
+        return;
+    }
 
     if (isJapanese == TRUE)
     {
@@ -1421,6 +1470,8 @@ static void DecompressGlyph_NormalCopy1(u16 glyphId, bool32 isJapanese)
 
 static s32 GetGlyphWidth_NormalCopy1(u16 glyphId, bool32 isJapanese)
 {
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+        return sRussianNormalGlyphWidths[glyphId - RUSSIAN_GLYPH_FIRST];
     if (isJapanese == TRUE)
         return 8;
     else
@@ -1432,6 +1483,12 @@ void DecompressGlyph_Normal(u16 glyphId, bool32 isJapanese)
     const u16 *glyphs;
     int i;
     u8 lastColor;
+
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+    {
+        DecompressRussianGlyphNormal(glyphId, sFontRussianNormalGlyphs);
+        return;
+    }
 
     if (isJapanese == TRUE)
     {
@@ -1487,6 +1544,8 @@ void DecompressGlyph_Normal(u16 glyphId, bool32 isJapanese)
 
 static s32 GetGlyphWidth_Normal(u16 glyphId, bool32 isJapanese)
 {
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+        return sRussianNormalGlyphWidths[glyphId - RUSSIAN_GLYPH_FIRST];
     if (isJapanese == TRUE)
     {
         if (glyphId == 0)
@@ -1505,6 +1564,12 @@ static void DecompressGlyph_NormalCopy2(u16 glyphId, bool32 isJapanese)
     const u16 *glyphs;
     int i;
     u8 lastColor;
+
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+    {
+        DecompressRussianGlyphNormal(glyphId, sFontRussianNormalGlyphs);
+        return;
+    }
 
     if (isJapanese == TRUE)
     {
@@ -1537,6 +1602,8 @@ static void DecompressGlyph_NormalCopy2(u16 glyphId, bool32 isJapanese)
 
 static s32 GetGlyphWidth_NormalCopy2(u16 glyphId, bool32 isJapanese)
 {
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+        return sRussianNormalGlyphWidths[glyphId - RUSSIAN_GLYPH_FIRST];
     if (isJapanese == TRUE)
         return 10;
     else
@@ -1548,6 +1615,12 @@ static void DecompressGlyph_Male(u16 glyphId, bool32 isJapanese)
     const u16 *glyphs;
     int i;
     u8 lastColor;
+
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+    {
+        DecompressRussianGlyphNormal(glyphId, sFontRussianMaleGlyphs);
+        return;
+    }
 
     if (isJapanese == TRUE)
     {
@@ -1603,6 +1676,8 @@ static void DecompressGlyph_Male(u16 glyphId, bool32 isJapanese)
 
 static s32 GetGlyphWidth_Male(u16 glyphId, bool32 isJapanese)
 {
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+        return sRussianNormalGlyphWidths[glyphId - RUSSIAN_GLYPH_FIRST];
     if (isJapanese == TRUE)
     {
         if (glyphId == 0)
@@ -1619,6 +1694,12 @@ void DecompressGlyph_Female(u16 glyphId, bool32 isJapanese)
     const u16 *glyphs;
     int i;
     u8 lastColor;
+
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+    {
+        DecompressRussianGlyphNormal(glyphId, sFontRussianFemaleGlyphs);
+        return;
+    }
 
     if (isJapanese == TRUE)
     {
@@ -1674,6 +1755,8 @@ void DecompressGlyph_Female(u16 glyphId, bool32 isJapanese)
 
 static s32 GetGlyphWidth_Female(u16 glyphId, bool32 isJapanese)
 {
+    if (!isJapanese && IS_RUSSIAN_GLYPH(glyphId))
+        return sRussianNormalGlyphWidths[glyphId - RUSSIAN_GLYPH_FIRST];
     if (isJapanese == TRUE)
     {
         if (glyphId == 0)

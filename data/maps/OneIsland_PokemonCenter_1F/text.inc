@@ -367,3 +367,11 @@ OneIsland_PokemonCenter_1F_Text_PLG_AuroraTicket::
     .string "through the Network Machine.\p"
     .string "This AURORA TICKET should get you\n"
     .string "to BIRTH ISLAND.$"
+
+OneIsland_PokemonCenter_1F_Text_PLG_ReceivedMysticTicket::
+    .string "{PLAYER} received the MYSTIC TICKET\n"
+    .string "from CELIO!$"
+
+OneIsland_PokemonCenter_1F_Text_PLG_ReceivedAuroraTicket::
+    .string "{PLAYER} received the AURORA TICKET\n"
+    .string "from CELIO!$"

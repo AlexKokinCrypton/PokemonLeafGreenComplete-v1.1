@@ -1,14 +1,12 @@
-name: Build LeafGreen
+name: Build LeafGreen (EN/RU)
 
 on:
   push:
     branches:
       - main
-
   pull_request:
     branches:
       - main
-
   workflow_dispatch:
 
 jobs:
@@ -19,6 +17,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Python runs on GitHub's cloud runner, NOT on the user's computer.
+      - name: Set up localization tools on the runner
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install localization test dependency
+        run: python -m pip install 'Pillow>=10,<13'
+
+      - name: Validate exported HTML translator CSV
+        run: python tools/localization/translate.py validate
+
+      - name: Run localization and reward regression tests
+        run: python -m unittest discover -s tools/localization -p 'test_*.py' -v
+
+      - name: Generate Russian text resources from CSV
+        run: python tools/localization/build_bilingual.py --texts-only
+
+      - name: Show translation integration summary
+        run: |
+          test -s src/localization_ru.generated.inc
+          if test -f localization/UNMAPPED_TRANSLATIONS.txt; then
+            echo 'Some translated strings cannot yet be mapped automatically:'
+            wc -l localization/UNMAPPED_TRANSLATIONS.txt
+            echo 'See localization/UNMAPPED_TRANSLATIONS.txt in the source or workflow logs.'
+          fi
+
       - name: Cache agbcc
         id: cache-agbcc
         uses: actions/cache@v4
@@ -28,7 +53,7 @@ jobs:
           restore-keys: |
             agbcc-${{ runner.os }}-
 
-      - name: Install build dependencies
+      - name: Install GBA build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -39,27 +64,23 @@ jobs:
 
       - name: Clone agbcc
         if: steps.cache-agbcc.outputs.cache-hit != 'true'
-        run: |
-          git clone https://github.com/pret/agbcc.git agbcc
+        run: git clone https://github.com/pret/agbcc.git agbcc
 
       - name: Build agbcc
         if: steps.cache-agbcc.outputs.cache-hit != 'true'
         working-directory: agbcc
-        run: |
-          ./build.sh
+        run: ./build.sh
 
       - name: Install agbcc
         working-directory: agbcc
-        run: |
-          ./install.sh ..
+        run: ./install.sh ..
 
-      - name: Build LeafGreen
-        run: |
-          make leafgreen -j$(nproc)
+      - name: Build LeafGreen with EN/RU resources
+        run: make leafgreen -j$(nproc)
 
       - name: Upload LeafGreen ROM
         uses: actions/upload-artifact@v4
         with:
-          name: PokemonLeafGreenComplete
+          name: PokemonLeafGreenComplete-EN-RU
           path: pokeleafgreen.gba
           if-no-files-found: error

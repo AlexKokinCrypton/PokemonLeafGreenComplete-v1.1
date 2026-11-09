@@ -29,6 +29,7 @@
 #include "berry_powder.h"
 #include "pokemon_jump.h"
 #include "event_scripts.h"
+#include "localization.h"
 
 // this file's functions
 static void ResetMiniGamesResults(void);
@@ -66,6 +67,7 @@ static void SetDefaultOptions(void)
     gSaveBlock2Ptr->optionsBattleSceneOff = FALSE;
     gSaveBlock2Ptr->regionMapZoom = FALSE;
     gSaveBlock2Ptr->optionsButtonMode = OPTIONS_BUTTON_MODE_HELP;
+    SetGameLanguage(GAME_LANGUAGE_ENGLISH);
 }
 
 static void ClearPokedexFlags(void)

@@ -1,5 +1,6 @@
 #include "global.h"
 #include "gflib.h"
+#include "localization.h"
 
 EWRAM_DATA u8 gStringVar1[32] = {};
 EWRAM_DATA u8 gStringVar2[20] = {};
@@ -283,6 +284,7 @@ u8 *ConvertIntToHexStringN(u8 *dest, s32 value, enum StringConvertMode mode, u8 
 
 u8 *StringExpandPlaceholders(u8 *dest, const u8 *src)
 {
+    src = GetLocalizedText(src);
     for (;;)
     {
         u8 c = *src++;

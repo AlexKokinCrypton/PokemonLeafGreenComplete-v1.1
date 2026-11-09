@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LeafGreen Complete — перевод EN / RU</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#213047;background:#f5f7fb;font-size:14px}
+*{box-sizing:border-box}body{margin:0}header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#143f40;color:white;padding:19px 25px}h1{font-size:18px;margin:0 0 4px}header p{margin:0;opacity:.85;font-size:12px}header .pill{background:#2d6162;color:#f4ffff;border:1px solid #619293;border-radius:18px;padding:7px 12px;font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(285px,340px) minmax(0,1fr);min-height:calc(100vh - 79px)}aside{background:#fff;border-right:1px solid #dce4ec;padding:18px 14px}.filters{display:flex;gap:7px;margin:10px 0}.filters select{max-width:125px}.filters input{width:100%}
+input,select,textarea,button{font:inherit}input,select{height:37px;padding:8px 9px;border:1px solid #ccd6df;border-radius:7px;background:#fff}input:focus,select:focus,textarea:focus{outline:2px solid #74b7af;outline-offset:1px}.count{color:#718093;font-size:12px;margin:12px 3px}.entries{display:grid;gap:5px;max-height:calc(100vh - 270px);overflow:auto}.entry{background:white;text-align:left;border:1px solid #e5ebf0;border-radius:8px;padding:9px;cursor:pointer;width:100%}.entry:hover{background:#f5faf9}.entry.active{border-color:#248779;background:#eef9f5}.entry .name{font-size:11px;color:#708497;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.entry .preview{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;margin-top:4px}.entry .status{font-size:10px;color:#7b8796;margin-top:6px}.entry .status.done{color:#15724f}.pager{display:flex;justify-content:space-between;margin-top:13px;align-items:center;gap:4px}.pager button{padding:7px 10px}
+main{padding:26px;max-width:1080px;width:100%;margin:auto}.empty{border:1px dashed #b9c6d0;border-radius:12px;color:#748090;text-align:center;padding:85px 20px}.editor{display:none}.editor.visible{display:block}.metadata{margin-bottom:12px;color:#6b798c;font-size:11px;overflow-wrap:anywhere}.workspace{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{border:1px solid #dbe3eb;border-radius:12px;background:white;padding:20px;min-width:0;box-shadow:0 2px 8px #25394b08}.panel h2{font-size:14px;margin:0 0 14px}.readOnly{background:#f8fafc;border:1px solid #e8edf2;border-radius:9px;padding:13px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:2.1;min-height:95px}.lock{display:inline-block;background:#e4ecee;color:#285263;border:1px solid #bfd3d6;border-radius:6px;padding:0px 6px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre;vertical-align:baseline;cursor:not-allowed;user-select:none}.lock::before{content:"🔒 ";font-size:10px}.fields{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px;line-height:1.5}.editable{flex:1 1 100%;resize:vertical;min-height:50px;max-width:100%;font-size:14px;line-height:1.5;background:#fff;border:1px solid #cbd5df;border-radius:7px;padding:10px}.editable:empty{min-height:42px}.tokenRow{display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:100%;margin:6px 0}.tokenRow span.help{color:#7e8b9c;font-size:11px}.tip{margin:10px 0 0;font-size:12px;color:#738092}.actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:19px}button{cursor:pointer;border:1px solid #ccd8df;border-radius:7px;padding:10px 14px;background:white;color:#213047}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:#186957;color:white;border-color:#186957}.primary:hover{background:#0e5546}.danger{color:#a54343}.feedback{margin:15px 0 0;padding:12px 14px;border-radius:7px;display:none;background:#e9f7ef;color:#12623d}.feedback.bad{background:#fff0ef;color:#a63d2a}.footer{margin-top:20px;color:#79889b;font-size:12px;line-height:1.5}
+@media(max-width:850px){.layout{display:block}aside{border-right:0;border-bottom:1px solid #ccd8df}.entries{max-height:180px}.workspace{grid-template-columns:1fr}main{padding:14px}}
+</style>
+</head>
+<body>
+<header><div><h1>Pokémon LeafGreen Complete · EN / RU</h1><p>Локальный переводчик игровых строк · оригинальный английский сохранён</p></div><span class="pill">🔒 Игровые коды заблокированы</span></header>
+<div class="layout">
+<aside>
+ <label for="search"><b>Поиск строк</b></label>
+ <div class="filters"><input id="search" placeholder="Текст, имя, файл…" autocomplete="off" /><select id="filter"><option value="all">Все строки</option><option value="untranslated">Без перевода</option><option value="translated">Переведённые</option></select></div>
+ <div class="count" id="count">Загрузка…</div>
+ <div class="entries" id="entries"></div>
+ <div class="pager"><button id="prev">← Назад</button><span id="pagination"></span><button id="next">Вперёд →</button></div>
+</aside>
+<main>
+ <div id="empty" class="empty">Выберите строку слева, чтобы начать перевод.</div>
+ <div class="editor" id="editor">
+  <div class="metadata" id="metadata"></div>
+  <div class="workspace">
+   <section class="panel"><h2>🇬🇧 Английский · только чтение</h2><div class="readOnly" id="english"></div><p class="tip">Это оригинальный исходный текст. Он никогда не перезаписывается.</p></section>
+   <section class="panel"><h2>🇷🇺 Русский · редактируются только слова</h2><div class="fields" id="russian"></div><p class="tip">Плашки с 🔒 — служебные коды игры. Их нельзя редактировать, удалять или менять местами. Можете изменить только текстовые поля вокруг них.</p></section>
+  </div>
+  <div class="actions"><button class="primary" id="save">Сохранить перевод</button><button class="danger" id="clear">Сбросить русский перевод</button><span id="statusText"></span></div>
+  <div id="feedback" class="feedback"></div>
+  <div class="footer">Переводы записываются в <code>localization/en_ru.csv</code>. Исходники игры не изменяются. Для работы русского языка непосредственно в ROM потребуется отдельное подключение кириллического шрифта и переключателя языка.</div>
+ </div>
+</main>
+</div>
+<script>
+'use strict';
+const $ = s => document.getElementById(s);
+let list=[], offset=0, total=0, current=null, dirty=false;
+function node(tag,css,text){const e=document.createElement(tag);if(css)e.className=css;if(text!==undefined)e.textContent=text;return e;}
+function setFeedback(msg,isError=false){const el=$('feedback');el.style.display='block';el.className='feedback'+(isError?' bad':'');el.textContent=msg;}
+async function jsonFetch(url, opts){const resp=await fetch(url,opts);const data=await resp.json();if(!resp.ok)throw Error(data.error||'Ошибка запроса');return data;}
+function safeError(err){setFeedback('Ошибка: '+err.message,true)}
+function renderList(){let box=$('entries');box.replaceChildren();for(const item of list){
+ const b=node('button','entry'+(item.key===current?.key?' active':''));
+ b.append(node('div','name',item.key),node('div','preview',item.russian||item.english),node('div','status'+(item.russian?' done':''),item.russian?'● Переведено':'○ Не переведено'));
+ b.onclick=()=>selectEntry(item.key);box.append(b);
+}
+$('count').textContent=`Найдено: ${total.toLocaleString('ru-RU')}`;
+$('pagination').textContent=total?`${offset+1}–${Math.min(offset+35,total)} из ${total}`:'0';
+$('prev').disabled=offset<=0;$('next').disabled=offset+35>=total;
+}
+async function fetchList(reset=false){if(reset)offset=0;const q=encodeURIComponent($('search').value.trim()), f=$('filter').value;const data=await jsonFetch(`/api/list?q=${q}&status=${f}&offset=${offset}`);list=data.entries;total=data.total;renderList();}
+function lock(text){const el=node('span','lock',text);el.title='Защищённый игровой код: не редактируется';return el;}
+function renderOriginal(data){const target=$('english');target.replaceChildren();data.english_parts.forEach((part,i)=>{
+ target.append(document.createTextNode(part));if(i<data.tokens.length)target.append(lock(data.tokens[i]));
+});}
+function renderTranslation(data){let target=$('russian');target.replaceChildren();for(let i=0;i<data.parts.length;i++){
+ const label=node('label','tokenRow');label.append(node('span','help',`Текст ${i+1}`));target.append(label);
+ const area=node('textarea','editable');area.value=data.parts[i];area.dataset.index=i;area.spellcheck=true;area.rows=Math.min(6,Math.max(2,Math.ceil(area.value.length/46)));
+ area.addEventListener('input',()=>{dirty=true;$('statusText').textContent='Есть несохранённые изменения';});
+ target.append(area);
+ if(i<data.tokens.length){let holder=node('div','tokenRow');holder.append(lock(data.tokens[i]));target.append(holder);}
+}}
+async function selectEntry(key){if(dirty&&!confirm('Остались несохранённые изменения. Перейти без сохранения?'))return;
+try{const data=await jsonFetch(`/api/item?key=${encodeURIComponent(key)}`);current=data;dirty=false;
+ $('empty').style.display='none';$('editor').classList.add('visible');$('metadata').textContent=`${data.file} · ${data.symbol}`;
+ renderOriginal(data);$('feedback').style.display='none';$('statusText').textContent=data.is_draft?'Черновик':'Переведено';
+ if(!data.valid){$('russian').replaceChildren(node('p','', 'В этой строке уже повреждены служебные коды. Проверьте CSV вручную и восстановите исходные коды перед редактированием.'));$('save').disabled=true;}
+ else{$('save').disabled=false;renderTranslation(data);}
+ renderList();}catch(e){safeError(e)}}
+async function save(clear=false){if(!current)return;
+ if(clear&&!confirm('Удалить русский перевод для выбранной строки?'))return;
+ try{const data={key:current.key,clear};if(!clear)data.parts=Array.from(document.querySelectorAll('.editable')).map(x=>x.value);
+ await jsonFetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Translator':'1'},body:JSON.stringify(data)});
+ dirty=false;setFeedback(clear?'Перевод удалён.':'Перевод сохранён. Все служебные коды сохранены автоматически.');
+ const key=current.key;await fetchList(false);await selectEntry(key);setFeedback(clear?'Перевод удалён.':'Перевод сохранён. Служебные коды остались без изменений.');
+ }catch(e){safeError(e)}}
+$('save').onclick=()=>save(false);$('clear').onclick=()=>save(true);
+$('prev').onclick=()=>{offset=Math.max(0,offset-35);fetchList().catch(safeError)};
+$('next').onclick=()=>{offset+=35;fetchList().catch(safeError)};
+let debounce; $('search').oninput=()=>{clearTimeout(debounce);debounce=setTimeout(()=>fetchList(true).catch(safeError),220)};
+$('filter').onchange=()=>fetchList(true).catch(safeError);
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+fetchList().catch(safeError);
+</script>
+</body>
+</html>

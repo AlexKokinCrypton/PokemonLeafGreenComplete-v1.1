@@ -1,3 +1,34 @@
+**Без локального Python:** [пошаговая инструкция по HTML → CSV → GitHub Actions](БЕЗ_PYTHON_ИНСТРУКЦИЯ.md).
+
+**EN/RU bilingual implementation:** see [BILINGUAL_EN_RU.md](BILINGUAL_EN_RU.md) for fonts, language selection, translation import, build instructions and current QA limitations.
+
+# Pokémon LeafGreen Complete v1.1 — customization and localization
+
+**LeafGreen Complete** contains gameplay modifications described in
+[`PLG_COMPLETE_CHANGELOG.md`](PLG_COMPLETE_CHANGELOG.md).
+
+**Standalone offline HTML translator (recommended):** Double-click
+[`tools/localization/leafgreen-offline-editor.html`](tools/localization/leafgreen-offline-editor.html)
+from your file manager. It already contains all 11,967 source strings; no server, Python or
+Internet is needed. Protected game tokens are non-editable chips. Click **Save string** and,
+when ready, **Download CSV**, then copy the resulting `en_ru.csv` over
+`localization/en_ru.csv` in this repository. Use **Load CSV** to reopen your work.
+
+**Alternative (direct CSV saving via local Python server):**
+
+```bash
+python3 tools/localization/translate.py serve
+```
+
+Open <http://127.0.0.1:8765> in your browser. See
+[`localization/README_RU.md`](localization/README_RU.md) for instructions (Russian).
+The English resources are preserved. Language selection and Cyrillic font support are present in source code, but an emulator-tested ROM build is **not yet confirmed**.
+
+**Gift-fix notes and gameplay testing status:**
+[`REWARD_FIX_AND_TESTING_RU.md`](REWARD_FIX_AND_TESTING_RU.md).
+
+---
+
 # Pokémon FireRed and LeafGreen
 
 This is a decompilation of English Pokémon FireRed and LeafGreen.

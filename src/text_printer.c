@@ -1,6 +1,7 @@
 #include "global.h"
 #include "window.h"
 #include "text.h"
+#include "localization.h"
 
 static EWRAM_DATA struct TextPrinter sTempTextPrinter = {0};
 static EWRAM_DATA struct TextPrinter sTextPrinters[NUM_TEXT_PRINTERS] = {0};
@@ -49,7 +50,7 @@ u16 AddTextPrinterParameterized(u8 windowId, u8 fontId, const u8 *str, u8 x, u8 
 {
     struct TextPrinterTemplate printerTemplate;
 
-    printerTemplate.currentChar = str;
+    printerTemplate.currentChar = GetLocalizedText(str);
     printerTemplate.windowId = windowId;
     printerTemplate.fontId = fontId;
     printerTemplate.x = x;
@@ -83,6 +84,7 @@ bool16 AddTextPrinter(struct TextPrinterTemplate *textSubPrinter, u8 speed, void
         sTempTextPrinter.subUnion.fields[i] = 0;
 
     sTempTextPrinter.printerTemplate = *textSubPrinter;
+    sTempTextPrinter.printerTemplate.currentChar = GetLocalizedText(textSubPrinter->currentChar);
     sTempTextPrinter.callback = callback;
     sTempTextPrinter.minLetterSpacing = 0;
     sTempTextPrinter.japanese = 0;

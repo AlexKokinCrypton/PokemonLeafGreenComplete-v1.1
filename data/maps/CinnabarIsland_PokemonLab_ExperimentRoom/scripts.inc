@@ -6,23 +6,37 @@ CinnabarIsland_PokemonLab_ExperimentRoom_MapScripts::
 	.byte 0
 
 
+@ Reward contract: no flag is set unless an item was actually added to the Bag.
+@ A full Bag shows a retryable message; the player can return after making space.
 CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_TryGiveSecondFossil::
 	setvar VAR_RESULT, FALSE
 	goto_if_unset FLAG_SYS_NATIONAL_DEX, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilReturn
 	goto_if_set FLAG_PLG_SECOND_FOSSIL_GIFT, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilReturn
 	goto_if_unset FLAG_GOT_FOSSIL_FROM_MT_MOON, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilReturn
-	msgbox CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossil
 	goto_if_set FLAG_GOT_HELIX_FOSSIL, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_GiveSecondDome
-	giveitem ITEM_HELIX_FOSSIL
+	checkitemspace ITEM_HELIX_FOSSIL, 1
+	goto_if_eq VAR_RESULT, FALSE, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilNoRoom
+	msgbox CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossil
+	additem ITEM_HELIX_FOSSIL, 1
+	goto_if_eq VAR_RESULT, FALSE, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilNoRoom
+	msgreceiveditem CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossilReceived, ITEM_HELIX_FOSSIL, 1, MUS_OBTAIN_KEY_ITEM
 	setflag FLAG_GOT_HELIX_FOSSIL
 	goto CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilDone
 CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_GiveSecondDome::
-	giveitem ITEM_DOME_FOSSIL
+	checkitemspace ITEM_DOME_FOSSIL, 1
+	goto_if_eq VAR_RESULT, FALSE, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilNoRoom
+	msgbox CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossil
+	additem ITEM_DOME_FOSSIL, 1
+	goto_if_eq VAR_RESULT, FALSE, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilNoRoom
+	msgreceiveditem CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossilReceived, ITEM_DOME_FOSSIL, 1, MUS_OBTAIN_KEY_ITEM
 	setflag FLAG_GOT_DOME_FOSSIL
 CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilDone::
 	setflag FLAG_PLG_SECOND_FOSSIL_GIFT
 	setvar VAR_RESULT, TRUE
-	msgbox CinnabarIsland_PokemonLab_ExperimentRoom_Text_PLG_SecondFossilReceived
+	return
+CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilNoRoom::
+	msgbox Text_TooBadBagFull
+	setvar VAR_RESULT, TRUE  @ Gift was attempted; leave flags unset so it is retryable.
 CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilReturn::
 	return
 CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SecondFossilEnd::

@@ -60,6 +60,18 @@ $(FONTGFXDIR)/japanese_small.fwjpnfont: $(FONTGFXDIR)/japanese_small.png
 $(FONTGFXDIR)/japanese_tall.fwjpnfont: $(FONTGFXDIR)/japanese_tall.png
 	$(GFX) $< $@
 
+$(FONTGFXDIR)/russian_normal.fwlatfont: $(FONTGFXDIR)/russian_normal.png
+	$(GFX) $< $@
+
+$(FONTGFXDIR)/russian_male.fwlatfont: $(FONTGFXDIR)/russian_male.png
+	$(GFX) $< $@
+
+$(FONTGFXDIR)/russian_female.fwlatfont: $(FONTGFXDIR)/russian_female.png
+	$(GFX) $< $@
+
+$(FONTGFXDIR)/russian_small.hwlatfont: $(FONTGFXDIR)/russian_small.png
+	$(GFX) $< $@
+
 $(FONTGFXDIR)/latin_normal.fwlatfont: $(FONTGFXDIR)/latin_normal.png
 	$(GFX) $< $@
 

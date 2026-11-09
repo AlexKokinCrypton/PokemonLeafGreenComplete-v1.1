@@ -256,11 +256,19 @@ OneIsland_PokemonCenter_1F_EventScript_PLG_TryGiveTickets::
 OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn::
 	return
 
+@ Tickets use the same transactional reward flow as the second fossil:
+@ check Bag -> add item -> verify success -> show received message -> set flags.
 OneIsland_PokemonCenter_1F_EventScript_PLG_TryMysticTicket::
 	goto_if_set FLAG_PLG_GOT_MYSTIC_TICKET, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
+	@ An event-distributed ticket may already be in the Bag: do not award it twice.
+	checkitem ITEM_MYSTIC_TICKET, 1
+	goto_if_eq VAR_RESULT, TRUE, OneIsland_PokemonCenter_1F_EventScript_PLG_MysticAlreadyOwned
+	checkitemspace ITEM_MYSTIC_TICKET, 1
+	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketNoRoom
 	msgbox OneIsland_PokemonCenter_1F_Text_PLG_MysticTicket
-	giveitem ITEM_MYSTIC_TICKET
-	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
+	additem ITEM_MYSTIC_TICKET, 1
+	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketNoRoom
+	msgreceiveditem OneIsland_PokemonCenter_1F_Text_PLG_ReceivedMysticTicket, ITEM_MYSTIC_TICKET, 1, MUS_OBTAIN_KEY_ITEM
 	setflag FLAG_ENABLE_SHIP_NAVEL_ROCK
 	setflag FLAG_PLG_GOT_MYSTIC_TICKET
 	setvar VAR_RESULT, TRUE
@@ -272,12 +280,36 @@ OneIsland_PokemonCenter_1F_EventScript_PLG_TryAuroraTicket::
 	goto_if_unset FLAG_PLG_CAUGHT_LUGIA, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
 	goto_if_unset FLAG_PLG_CAUGHT_HO_OH, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
 	goto_if_unset FLAG_PLG_ELITE4_REMATCH_COMPLETE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
+	checkitem ITEM_AURORA_TICKET, 1
+	goto_if_eq VAR_RESULT, TRUE, OneIsland_PokemonCenter_1F_EventScript_PLG_AuroraAlreadyOwned
+	checkitemspace ITEM_AURORA_TICKET, 1
+	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketNoRoom
 	msgbox OneIsland_PokemonCenter_1F_Text_PLG_AuroraTicket
-	giveitem ITEM_AURORA_TICKET
-	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketsReturn
+	additem ITEM_AURORA_TICKET, 1
+	goto_if_eq VAR_RESULT, FALSE, OneIsland_PokemonCenter_1F_EventScript_PLG_TicketNoRoom
+	msgreceiveditem OneIsland_PokemonCenter_1F_Text_PLG_ReceivedAuroraTicket, ITEM_AURORA_TICKET, 1, MUS_OBTAIN_KEY_ITEM
 	setflag FLAG_ENABLE_SHIP_BIRTH_ISLAND
 	setflag FLAG_PLG_GOT_AURORA_TICKET
 	setvar VAR_RESULT, TRUE
+	return
+
+@ If the player brought an existing event ticket, reconcile the unlock flags
+@ without displaying a second gift message or creating a duplicate item.
+OneIsland_PokemonCenter_1F_EventScript_PLG_MysticAlreadyOwned::
+	setflag FLAG_ENABLE_SHIP_NAVEL_ROCK
+	setflag FLAG_PLG_GOT_MYSTIC_TICKET
+	setvar VAR_RESULT, FALSE
+	return
+
+OneIsland_PokemonCenter_1F_EventScript_PLG_AuroraAlreadyOwned::
+	setflag FLAG_ENABLE_SHIP_BIRTH_ISLAND
+	setflag FLAG_PLG_GOT_AURORA_TICKET
+	setvar VAR_RESULT, FALSE
+	return
+
+OneIsland_PokemonCenter_1F_EventScript_PLG_TicketNoRoom::
+	msgbox Text_TooBadBagFull
+	setvar VAR_RESULT, TRUE  @ Leave ticket and ship flags unset to allow retry.
 	return
 
 OneIsland_PokemonCenter_1F_EventScript_PLG_TicketEnd::
