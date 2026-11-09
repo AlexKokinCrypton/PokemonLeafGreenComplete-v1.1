@@ -195,7 +195,7 @@ static const u16 sFontRussianNormalGlyphs[] = INCBIN_U16("graphics/fonts/russian
 static const u16 sFontRussianMaleGlyphs[] = INCBIN_U16("graphics/fonts/russian_male.fwlatfont");
 static const u16 sFontRussianFemaleGlyphs[] = INCBIN_U16("graphics/fonts/russian_female.fwlatfont");
 static const u16 sFontRussianSmallGlyphs[] = INCBIN_U16("graphics/fonts/russian_small.hwlatfont");
-// Generated from the actual donor-glyph pixel extents; not arbitrary padding.
+// Pixel widths are derived from the FRLG-style Cyrillic glyph extents.
 #include "russian_glyph_widths.generated.inc"
 
 static void DecompressRussianGlyphNormal(u16 glyphId, const u16 *fontGlyphs)

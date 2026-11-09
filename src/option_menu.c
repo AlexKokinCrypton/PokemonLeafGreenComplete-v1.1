@@ -75,7 +75,7 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] =
         .bg = 1,
         .tilemapLeft = 2,
         .tilemapTop = 3,
-        .width = 26,
+        .width = 24,
         .height = 2,
         .paletteNum = 1,
         .baseBlock = 2
@@ -83,11 +83,11 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] =
     {
         .bg = 0,
         .tilemapLeft = 2,
-        .tilemapTop = 7,
-        .width = 26,
-        .height = 12,
+        .tilemapTop = 6,
+        .width = 24,
+        .height = 13,
         .paletteNum = 1,
-        .baseBlock = 0x36
+        .baseBlock = 0x32
     },
     {
         .bg = 2,
@@ -96,7 +96,7 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] =
         .width = 30,
         .height = 2,
         .paletteNum = 15,
-        .baseBlock = 0x16e
+        .baseBlock = 0x16A
     },
     DUMMY_WIN_TEMPLATE
 };
@@ -135,9 +135,14 @@ static const struct BgTemplate sOptionMenuBgTemplates[] =
 static const u16 sOptionMenuPalette[] = INCBIN_U16("graphics/misc/option_menu.gbapal");
 static const u16 sOptionMenuItemCounts[MENUITEM_COUNT] = {3, 2, 2, 2, 3, 10, 2, 0};
 static const u8 sLanguageMenuName[] = _("LANGUAGE");
-/* Eight rows must fit in the original 12-tile (96px) options window.
- * This also keeps its character tiles clear of the help window at 0x16e. */
-#define OPTION_ROW_HEIGHT 11
+/* 8 rows x 13px = 104px, exactly the menu's 13-tile text area.
+ * Keep per-row text at its native 13px height to avoid cutting off descenders.
+ * Window tile allocation ends at 0x1A6, below menu graphics (0x1AA). */
+#define OPTION_ROW_HEIGHT 13
+#define OPTION_LABEL_X 8
+#define OPTION_VALUE_X 111
+#define OPTION_TEXT_Y 0
+#define OPTION_WINDOW_PIXEL_WIDTH (24 * 8)
 
 static const u8 *const sOptionMenuItemsNames[MENUITEM_COUNT] =
 {
@@ -483,9 +488,12 @@ static void BufferOptionMenuString(u8 selection)
     u8 x, y;
     
     memcpy(dst, sOptionMenuTextColor, 3);
-    x = 0x82;
-    y = OPTION_ROW_HEIGHT * selection + 2;
-    FillWindowPixelRect(1, 1, x, y, 0x46, GetFontAttribute(FONT_SMALL, FONTATTR_MAX_LETTER_HEIGHT));
+    x = OPTION_VALUE_X;
+    y = OPTION_ROW_HEIGHT * selection + OPTION_TEXT_Y;
+    // Clear the entire value column before redrawing. Text never shares pixels
+    // with the next row, including Latin descenders and Cyrillic tails.
+    FillWindowPixelRect(1, 1, x, y, OPTION_WINDOW_PIXEL_WIDTH - x,
+                        OPTION_ROW_HEIGHT);
 
     switch (selection)
     {
@@ -549,20 +557,19 @@ static void DrawOptionMenuBg(void)
 {
     u8 h;
     h = 2;
-    
+
+    // Keep the original title and top help bar in place. Title bottom and
+    // options top share the separator at y=5, giving the options one more row.
     FillBgTilemapBufferRect(1, 0x1B3, 1, 2, 1, 1, 3);
     FillBgTilemapBufferRect(1, 0x1B4, 2, 2, 0x1B, 1, 3);
     FillBgTilemapBufferRect(1, 0x1B5, 0x1C, 2, 1, 1, 3);
     FillBgTilemapBufferRect(1, 0x1B6, 1, 3, 1, h, 3);
     FillBgTilemapBufferRect(1, 0x1B8, 0x1C, 3, 1, h, 3);
-    FillBgTilemapBufferRect(1, 0x1B9, 1, 5, 1, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1BA, 2, 5, 0x1B, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1BB, 0x1C, 5, 1, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1AA, 1, 6, 1, 1, h);
-    FillBgTilemapBufferRect(1, 0x1AB, 2, 6, 0x1A, 1, h);
-    FillBgTilemapBufferRect(1, 0x1AC, 0x1C, 6, 1, 1, h);
-    FillBgTilemapBufferRect(1, 0x1AD, 1, 7, 1, 0x10, h);
-    FillBgTilemapBufferRect(1, 0x1AF, 0x1C, 7, 1, 0x10, h);
+    FillBgTilemapBufferRect(1, 0x1AA, 1, 5, 1, 1, h);
+    FillBgTilemapBufferRect(1, 0x1AB, 2, 5, 0x1A, 1, h);
+    FillBgTilemapBufferRect(1, 0x1AC, 0x1C, 5, 1, 1, h);
+    FillBgTilemapBufferRect(1, 0x1AD, 1, 6, 1, 0xD, h);
+    FillBgTilemapBufferRect(1, 0x1AF, 0x1C, 6, 1, 0xD, h);
     FillBgTilemapBufferRect(1, 0x1B0, 1, 0x13, 1, 1, h);
     FillBgTilemapBufferRect(1, 0x1B1, 2, 0x13, 0x1A, 1, h);
     FillBgTilemapBufferRect(1, 0x1B2, 0x1C, 0x13, 1, 1, h);
@@ -577,16 +584,16 @@ static void LoadOptionMenuItemNames(void)
     for (i = 0; i < MENUITEM_COUNT; i++)
     {
         AddTextPrinterParameterized(WIN_OPTIONS, FONT_SMALL,
-                                    i == MENUITEM_LANGUAGE ? GetLanguageMenuLabel() : sOptionMenuItemsNames[i], 8, (u8)(i * OPTION_ROW_HEIGHT + 2), TEXT_SKIP_DRAW, NULL);    
+                                    i == MENUITEM_LANGUAGE ? GetLanguageMenuLabel() : sOptionMenuItemsNames[i],
+                                    OPTION_LABEL_X, (u8)(i * OPTION_ROW_HEIGHT + OPTION_TEXT_Y),
+                                    TEXT_SKIP_DRAW, NULL);    
     }
 }
 
 static void UpdateSettingSelectionDisplay(u16 selection)
 {
-    u16 maxLetterHeight, y;
-    
-    maxLetterHeight = GetFontAttribute(FONT_SMALL, FONTATTR_MAX_LETTER_HEIGHT);
-    y = selection * OPTION_ROW_HEIGHT + 0x3A;
-    SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(y, y + maxLetterHeight));
+    u16 y;
+    y = selection * OPTION_ROW_HEIGHT + (6 * 8) + OPTION_TEXT_Y;
+    SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(y, y + OPTION_ROW_HEIGHT));
     SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(0x10, 0xE0));
 }

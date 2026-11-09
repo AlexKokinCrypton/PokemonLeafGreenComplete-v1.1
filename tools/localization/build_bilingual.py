@@ -29,7 +29,7 @@ GLYPH_BASE = 0x80
 
 
 def build_fonts():
-    """Check the committed crisp pixel atlases and refresh glyph widths.
+    """Check committed native-pixel Cyrillic atlases and refresh glyph widths.
 
     Unlike the old donor downscaler, this does not resize or alter the bitmap
     glyphs. This prevents the blurry/squashed font from reappearing when the
@@ -55,14 +55,14 @@ def build_fonts():
                          if cell.getpixel((x, y)) == 1]
             if not fg_pixels:
                 raise ValueError(f'Missing Cyrillic glyph {letter} ({name})')
-            width = min(cell_width, max(x for x, _ in fg_pixels) + (2 if is_small else 3))
+            width = min(cell_width, max(x for x, _ in fg_pixels) + 2)
             widths.append(width)
         if is_small:
             small_widths = widths
         elif normal_widths is None:
             normal_widths = widths
     (ROOT / 'src/russian_glyph_widths.generated.inc').write_text(
-        '/* Generated from crisp committed Cyrillic atlases; no resampling. */\n'
+        '/* Generated from native-pixel FRLG-style Cyrillic atlases; no resampling. */\n'
         f'static const u8 sRussianNormalGlyphWidths[66] = {{{", ".join(map(str, normal_widths))}}};\n'
         f'static const u8 sRussianSmallGlyphWidths[66] = {{{", ".join(map(str, small_widths))}}};\n')
     return normal_widths
