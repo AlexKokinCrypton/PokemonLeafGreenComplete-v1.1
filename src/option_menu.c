@@ -85,7 +85,7 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] =
         .tilemapLeft = 2,
         .tilemapTop = 7,
         .width = 26,
-        .height = 13,
+        .height = 12,
         .paletteNum = 1,
         .baseBlock = 0x36
     },
@@ -135,7 +135,9 @@ static const struct BgTemplate sOptionMenuBgTemplates[] =
 static const u16 sOptionMenuPalette[] = INCBIN_U16("graphics/misc/option_menu.gbapal");
 static const u16 sOptionMenuItemCounts[MENUITEM_COUNT] = {3, 2, 2, 2, 3, 10, 2, 0};
 static const u8 sLanguageMenuName[] = _("LANGUAGE");
-#define OPTION_ROW_HEIGHT 12
+/* Eight rows must fit in the original 12-tile (96px) options window.
+ * This also keeps its character tiles clear of the help window at 0x16e. */
+#define OPTION_ROW_HEIGHT 11
 
 static const u8 *const sOptionMenuItemsNames[MENUITEM_COUNT] =
 {

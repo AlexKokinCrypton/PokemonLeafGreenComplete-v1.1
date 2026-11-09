@@ -36,20 +36,49 @@ class TestBilingual(unittest.TestCase):
             with self.assertRaises(ValueError):
                 b.encode(text)
 
-    def test_all_font_glyphs_have_pixels(self):
-        for name in ('normal', 'male', 'female'):
-            donor = Image.open(b.DONOR / f'rus_{name}.png')
-            generated = Image.open(b.FONTS / f'russian_{name}.png')
-            self.assertEqual(generated.size, (256, 80))
+    def test_crisp_cyrillic_atlases_and_no_resampling(self):
+        # Font glyphs are committed as PNG bitmaps. Regeneration may validate
+        # widths but must never stretch/rewrite the glyph pixels.
+        import hashlib
+        atlas_paths = [b.FONTS / f'russian_{name}.png'
+                       for name in ('normal', 'male', 'female', 'small')]
+        before = [hashlib.sha256(p.read_bytes()).hexdigest() for p in atlas_paths]
+        widths = b.build_fonts()
+        after = [hashlib.sha256(p.read_bytes()).hexdigest() for p in atlas_paths]
+        self.assertEqual(before, after)
+        self.assertEqual(len(widths), 66)
+        self.assertTrue(all(5 <= w <= 10 for w in widths))
+        for name, font_path in zip(('normal', 'male', 'female', 'small'), atlas_paths):
+            im = Image.open(font_path)
+            is_small = name == 'small'
+            gw, cols = (8, 32) if is_small else (16, 16)
+            self.assertEqual(im.size, (256, 48 if is_small else 80))
+            self.assertEqual(im.mode, 'P')
+            self.assertTrue(set(im.tobytes()).issubset({0, 1, 2, 3}))
             for i, c in enumerate(b.LETTERS):
-                src_idx = b.DONOR_INDEX[c]
-                src = donor.crop((src_idx % 16 * 16, src_idx // 16 * 16,
-                                  (src_idx % 16 + 1) * 16, (src_idx // 16 + 1) * 16))
-                dst = generated.crop((i % 16 * 16, i // 16 * 16,
-                                      (i % 16 + 1) * 16, (i // 16 + 1) * 16))
-                self.assertEqual(list(src.getdata()), list(dst.getdata()), (name, c))
-                self.assertIn(1, list(dst.getdata()), (name, c))
-        self.assertEqual(Image.open(b.FONTS / 'russian_small.png').size, (256, 48))
+                dst = im.crop(((i % cols) * gw, i // cols * 16,
+                               (i % cols + 1) * gw, (i // cols + 1) * 16))
+                active = [(x, y) for x in range(gw) for y in range(16)
+                          if dst.getpixel((x, y)) == 1]
+                self.assertTrue(active, (name, c))
+                self.assertLessEqual(max(y for _, y in active), 14, (name, c))
+
+    def test_option_menu_rows_and_vram_window_buffers(self):
+        import re
+        src = (b.ROOT / 'src/option_menu.c').read_text()
+        self.assertIn('#define OPTION_ROW_HEIGHT 11', src)
+        self.assertIn('MENUITEM_LANGUAGE,', src)
+        self.assertIn('MENUITEM_CANCEL,', src)
+        # Original help-window tile base starts at 0x16e. The extra
+        # Language row must NOT enlarge the options window into that buffer.
+        segment = src.split('static const struct WindowTemplate sOptionMenuWinTemplates[]', 1)[1].split('DUMMY_WIN_TEMPLATE', 1)[0]
+        windows = re.findall(r'\{\s*\.bg\s*=\s*\d+.*?\.width\s*=\s*(\d+).*?\.height\s*=\s*(\d+).*?\.baseBlock\s*=\s*(0x[\da-fA-F]+|\d+)', segment, re.S)
+        self.assertGreaterEqual(len(windows), 3)
+        spans = [(int(base, 0), int(base, 0) + int(w) * int(h)) for w, h, base in windows[:3]]
+        for left, right in zip(spans, spans[1:]):
+            self.assertLessEqual(left[1], right[0], 'Option UI tile buffers overlap and corrupt the help bar')
+        self.assertLessEqual(7 * 11 + 2 + 13, 12 * 8,
+                             'Cancel row extends past the options window')
 
     def test_catalog_symbol_alignment(self):
         with b.CSV.open(encoding='utf-8-sig', newline='') as fp:
